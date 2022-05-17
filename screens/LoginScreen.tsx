@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useState, useEffect } from "react";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/core";
+import Button from "../components/Button";
 
-const RootScreen = () => {
+const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
@@ -70,23 +71,22 @@ const RootScreen = () => {
         />
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleLogin} style={styles.button}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        <Button 
+          onPress={handleLogin}
+          label={'Login'}
+          outline={false}
+        />
+        <Button
           onPress={handleSignup}
-          style={[styles.button, styles.buttonOutline]}
-        >
-          <Text style={[styles.buttonText, styles.buttonOutlineText]}>
-            Register
-          </Text>
-        </TouchableOpacity>
+          label={'Register'}
+          outline={true}
+        />
       </View>
     </View>
   );
 };
 
-export default RootScreen;
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -100,9 +100,9 @@ const styles = StyleSheet.create({
     fontSize: 40,
     textTransform: "uppercase",
     color: "white",
-    fontWeight: "700",
     position: "absolute",
     top: "10%",
+    fontFamily: 'Inter-Bold'
   },
 
   titleBottom: {
@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     marginTop: 10,
+    fontFamily: 'Inter-Regular',
     fontSize: 16,
   },
 
@@ -128,32 +129,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 40,
-  },
-
-  button: {
-    alignItems: "center",
-    backgroundColor: "#77ABB7",
-    borderRadius: 20,
-    width: "100%",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    marginTop: 10,
-  },
-
-  buttonText: {
-    textTransform: "uppercase",
-    color: "white",
-    fontWeight: "700",
-    fontSize: 18,
-  },
-
-  buttonOutline: {
-    backgroundColor: "none",
-    borderColor: "#77ABB7",
-    borderWidth: 3,
-  },
-
-  buttonOutlineText: {
-    color: "#77ABB7",
   },
 });
