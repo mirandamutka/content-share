@@ -9,16 +9,20 @@ import {
 } from "react-native";
 import ButtonCircle from "../components/ButtonCircle";
 import ProfileCreate from "../components/ProfileCreate";
-import { getFirestore, collection, onSnapshot, getDoc, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ProfileEdit from "../components/ProfileEdit";
 
 export default function TabProfileScreen() {
   const auth = getAuth();
   const navigation = useNavigation();
   const firestore = getFirestore();
   const [profileList, setProfileList] = useState<any[]>([]);
+  const [profileEntry, setProfileEntry] = useState({});
   const [createProfile, setCreateProfile] = useState(false);
+  const [screen, setScreen] = useState("");
+  const [index, setIndex] = useState(Number);
 
   const handleSignOut = () => {
     auth
@@ -46,10 +50,31 @@ export default function TabProfileScreen() {
     }
   };
 
+  const switchProfileScreens = (screen: string) => {
+    switch (screen) {
+      case "create": return (
+        <ProfileCreate
+          createProfile={createProfile}
+          setCreateProfile={setCreateProfile}
+        />
+      )
+      case "edit": return (
+        <ProfileEdit 
+          profileEntry={profileEntry} 
+          index={index} 
+          createProfile={createProfile}
+          setCreateProfile={setCreateProfile} 
+        />
+      )
+    }
+  }
+
   useEffect(() => {
     if (createProfile) {
       renderProfiles();
+      console.log("Profile List: ", profileList);
     }
+    console.log("CreateProfile: ", createProfile);
   }, [createProfile]);
 
   useEffect(() => {
@@ -67,16 +92,13 @@ export default function TabProfileScreen() {
       <View style={styles.buttonCircleContainer}>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.scrollView}>
           {profileList.map((item, index) => {
-            return <ButtonCircle onPress={() => {}} label={""} key={index} item={item} />;
+            return <ButtonCircle onPress={() => [setScreen("edit"), setProfileEntry(profileEntry => ({...profileEntry, ...item})), setIndex(index), setCreateProfile(!createProfile)]} label={""} key={index} />;
           })}
-          <ButtonCircle onPress={() => {}} label={"+"} />
+          <ButtonCircle onPress={() => setScreen("create")} label={"+"} />
         </ScrollView>
       </View>
       <View style={styles.buttonContainer}>
-        <ProfileCreate
-          createProfile={createProfile}
-          setCreateProfile={setCreateProfile}
-        />
+        {switchProfileScreens(screen)}
       </View>
     </SafeAreaView>
   );
