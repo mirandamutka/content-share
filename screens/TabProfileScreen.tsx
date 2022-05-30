@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import ButtonCircle from "../components/ButtonCircle";
 import ProfileCreate from "../components/ProfileCreate";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
@@ -38,16 +37,23 @@ export default function TabProfileScreen() {
     if (auth.currentUser) {
       const uid = auth.currentUser.uid;
 
-      let profileRef = await getDocs(collection(firestore, "users", uid, "profiles"));
+      let profileRef = await getDocs(
+        collection(firestore, "users", uid, "profiles")
+      );
 
       profileRef.forEach((doc) => {
         let data = doc.data();
-          if (data.id !== "") {
-            if (!context?.profileList.some((el: { id: any; }) => el.id === data.id)) {
-              context?.setProfileList((profileList: any) => [...profileList, data]);
-            }
+        if (data.id !== "") {
+          if (
+            !context?.profileList.some((el: { id: any }) => el.id === data.id)
+          ) {
+            context?.setProfileList((profileList: any) => [
+              ...profileList,
+              data,
+            ]);
           }
-      })
+        }
+      });
     }
   };
 
@@ -55,34 +61,21 @@ export default function TabProfileScreen() {
     if (auth.currentUser) {
       const uid = auth.currentUser.uid;
 
-      let profileRef = await getDocs(collection(firestore, "users", uid, "profiles"));
+      let profileRef = await getDocs(
+        collection(firestore, "users", uid, "profiles")
+      );
 
       profileRef.forEach((doc) => {
         let data = doc.data();
-          if (data.id !== "") {
-            context?.setProfileList(context?.profileList.slice(context?.profileList.length))
-            context?.setProfileList((profileList: any) => [...profileList, data]);
-          }
-      })
+        if (data.id !== "") {
+          context?.setProfileList(
+            context?.profileList.slice(context?.profileList.length)
+          );
+          context?.setProfileList((profileList: any) => [...profileList, data]);
+        }
+      });
     }
   };
-
-  const switchProfileScreens = (screen: string) => {
-    switch (screen) {
-      case "create": return (
-        <ProfileCreate
-          createProfile={createProfile}
-          setCreateProfile={setCreateProfile}
-        />
-      )
-      case "edit": return (
-        <ProfileEdit 
-          createProfile={createProfile}
-          setCreateProfile={setCreateProfile} 
-        />
-      )
-    }
-  }
 
   useEffect(() => {
     if (createProfile) {
@@ -95,26 +88,26 @@ export default function TabProfileScreen() {
   useEffect(() => {
     if (context?.updateProfile) {
       rerenderProfiles();
-      console.log('Re-rendering... ', context?.profileList)
+      console.log("Re-rendering... ", context?.profileList);
     }
-    console.log("update profile status: ", context?.updateProfile)
+    console.log("update profile status: ", context?.updateProfile);
     context?.setUpdateProfile(false);
   }, [context?.updateProfile]);
 
   useEffect(() => {
     console.log("Profile entry: ", profileEntry);
-  }, [profileEntry])
+  }, [profileEntry]);
 
   useEffect(() => {
     renderProfiles();
   }, []);
 
   useEffect(() => {
-    console.log("Index: ", context?.index)
+    console.log("Index: ", context?.index);
     if (context?.profileList) {
-      console.log("profile list index: ", context?.profileList[context?.index])
+      console.log("profile list index: ", context?.profileList[context?.index]);
     }
-  }, [context?.index])
+  }, [context?.index]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -125,17 +118,19 @@ export default function TabProfileScreen() {
         <Text style={styles.buttonText}>Log out</Text>
       </TouchableOpacity>
       <View style={styles.buttonContainer}>
-        {context?.profileList.length <= 0 ?
-        <ProfileCreate
-          createProfile={createProfile}
-          setCreateProfile={setCreateProfile}
-        />
-        :
-        <ProfileEdit
-          createProfile={createProfile}
-          setCreateProfile={setCreateProfile} 
-        />  
-      }
+        {context?.profileList.length <= 0 ? (
+          <ProfileCreate
+            createProfile={createProfile}
+            setCreateProfile={setCreateProfile}
+          />
+        ) : (
+          <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.scrollViewContentContainer}>
+          <ProfileEdit
+            createProfile={createProfile}
+            setCreateProfile={setCreateProfile}
+          />
+          </ScrollView>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -144,9 +139,9 @@ export default function TabProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
     backgroundColor: "#3E3939",
     height: "100%",
+    alignItems: "center"
   },
 
   buttonTextContainer: {
@@ -182,4 +177,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
+  scrollViewContainer: { 
+    width: "100%", 
+    height: "100%" 
+  },
+
+  scrollViewContentContainer: { 
+    justifyContent: "space-evenly", 
+    alignItems: "center", 
+    flexGrow: 1 
+  }
 });

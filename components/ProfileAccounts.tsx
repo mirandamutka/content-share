@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 20,
     justifyContent: "space-around",
-    alignItems: "center",
+    alignItems: "center"
   },
 
   accountContainer: {
