@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
 import {
@@ -7,13 +7,11 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
+import { Context } from "../context/Context";
 
 interface IProfileAccounts {
   type: string
-  profileEntry: any
   nameFromFB: string
-  createProfile: boolean
-  setCreateProfile: any
 }
 
 const ProfileAccounts: FC<IProfileAccounts> = (props) => {
@@ -21,32 +19,40 @@ const ProfileAccounts: FC<IProfileAccounts> = (props) => {
   const firestore = getFirestore();
   const uid = auth.currentUser?.uid;
   const [userName, setUserName] = useState("");
-  let id = props.profileEntry.id;
-  let docRef: any;
-  if (uid)
-  {
-    docRef = doc(firestore, uid, id);
-  }
+  const [submit, setSubmit] = useState(false);
+  const context = useContext(Context);
+  let id = context?.profileList[context?.index].id;
+  let docRef = doc(firestore, "users", uid!, "profiles", id);
 
   const updateAccounts = async (username: string) => {
+    console.log("Doc ref: ", docRef)
     if (auth.currentUser) {
       props.type == "twitch" ? 
       await updateDoc(docRef, {
-        twitch: username,
+        twitch: username
       })
       :
       await updateDoc(docRef, {
-        youtube: username,
+        youtube: username
       })
+      context?.setUpdateProfile(true);
     }
   };
 
   useEffect(() => {
     console.log("username: ", userName);
-    if (userName !== "") {
+    if (submit) {
       updateAccounts(userName)
+      setSubmit(false)  
     }
-  }, [userName]);
+  }, [submit]);
+
+  useEffect(() => {
+    if(context?.profileList[context?.index].id) {
+      id = context?.profileList[context?.index].id;
+      docRef = doc(firestore, "users", uid!, "profiles", id);
+    }
+  }, [context?.profileList])
 
   return (
     <View style={styles.container}>
@@ -63,6 +69,8 @@ const ProfileAccounts: FC<IProfileAccounts> = (props) => {
           style={styles.inputText}
           onSubmitEditing={(value) => [
             setUserName(value.nativeEvent.text),
+            context?.setUpdateProfile(true),
+            setSubmit(true)
           ]}
         />
       </View>

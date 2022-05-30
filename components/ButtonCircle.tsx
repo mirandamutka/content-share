@@ -17,7 +17,7 @@ const ButtonCircle: FC<IButtonCircle> = (props) => {
 
   return props.small ? (
     <TouchableOpacity
-      onPress={selectedButton}
+      onPress={props.onPress}
       style={[styles.button, styles.small]}
     >
       <Text style={[styles.buttonText, styles.smallText]}>{props.label}</Text>

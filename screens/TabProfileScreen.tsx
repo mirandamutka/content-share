@@ -10,19 +10,22 @@ import {
 import ButtonCircle from "../components/ButtonCircle";
 import ProfileCreate from "../components/ProfileCreate";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ProfileEdit from "../components/ProfileEdit";
+import { Context } from "../context/Context";
 
 export default function TabProfileScreen() {
   const auth = getAuth();
   const navigation = useNavigation();
   const firestore = getFirestore();
-  const [profileList, setProfileList] = useState<any[]>([]);
+  // const [profileList, setProfileList] = useState<any[]>([]);
   const [profileEntry, setProfileEntry] = useState({});
   const [createProfile, setCreateProfile] = useState(false);
   const [screen, setScreen] = useState("");
-  const [index, setIndex] = useState(Number);
+  const [screenChanged, setScreenChanged] = useState(false);
+
+  const context = useContext(Context);
 
   const handleSignOut = () => {
     auth
@@ -37,14 +40,30 @@ export default function TabProfileScreen() {
     if (auth.currentUser) {
       const uid = auth.currentUser.uid;
 
-      const profileRef = await getDocs(collection(firestore, uid));
+      let profileRef = await getDocs(collection(firestore, "users", uid, "profiles"));
 
       profileRef.forEach((doc) => {
         let data = doc.data();
           if (data.id !== "") {
-            if (!profileList.some(el => el.id === data.id)) {
-              setProfileList(profileList => [...profileList, data]);
+            if (!context?.profileList.some((el: { id: any; }) => el.id === data.id)) {
+              context?.setProfileList((profileList: any) => [...profileList, data]);
             }
+          }
+      })
+    }
+  };
+
+  const rerenderProfiles = async () => {
+    if (auth.currentUser) {
+      const uid = auth.currentUser.uid;
+
+      let profileRef = await getDocs(collection(firestore, "users", uid, "profiles"));
+
+      profileRef.forEach((doc) => {
+        let data = doc.data();
+          if (data.id !== "") {
+            context?.setProfileList(context?.profileList.slice(context?.profileList.length))
+            context?.setProfileList((profileList: any) => [...profileList, data]);
           }
       })
     }
@@ -60,8 +79,6 @@ export default function TabProfileScreen() {
       )
       case "edit": return (
         <ProfileEdit 
-          profileEntry={profileEntry} 
-          index={index} 
           createProfile={createProfile}
           setCreateProfile={setCreateProfile} 
         />
@@ -72,14 +89,34 @@ export default function TabProfileScreen() {
   useEffect(() => {
     if (createProfile) {
       renderProfiles();
-      console.log("Profile List: ", profileList);
+      console.log("Profile List: ", context?.profileList);
     }
     console.log("CreateProfile: ", createProfile);
   }, [createProfile]);
 
   useEffect(() => {
+    if (context?.updateProfile) {
+      rerenderProfiles();
+      console.log('Re-rendering... ', context?.profileList)
+    }
+    console.log("update profile status: ", context?.updateProfile)
+    context?.setUpdateProfile(false);
+  }, [context?.updateProfile]);
+
+  useEffect(() => {
+    console.log("Profile entry: ", profileEntry);
+  }, [profileEntry])
+
+  useEffect(() => {
     renderProfiles();
   }, []);
+
+  useEffect(() => {
+    console.log("Index: ", context?.index)
+    if (context?.profileList) {
+      console.log("profile list index: ", context?.profileList[context?.index])
+    }
+  }, [context?.index])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -91,14 +128,14 @@ export default function TabProfileScreen() {
       </TouchableOpacity>
       <View style={styles.buttonCircleContainer}>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-          {profileList.map((item, index) => {
-            return <ButtonCircle onPress={() => [setScreen("edit"), setProfileEntry(profileEntry => ({...profileEntry, ...item})), setIndex(index), setCreateProfile(!createProfile)]} label={""} key={index} />;
+          {context?.profileList.map((item: {}, index: number) => {
+            return <ButtonCircle onPress={() => [setScreen("edit"), context?.setIndex(index), setScreenChanged(true)]} label={index.toString()} key={index} />;
           })}
           <ButtonCircle onPress={() => setScreen("create")} label={"+"} />
         </ScrollView>
       </View>
       <View style={styles.buttonContainer}>
-        {switchProfileScreens(screen)}
+        {screenChanged && switchProfileScreens(screen)}
       </View>
     </SafeAreaView>
   );

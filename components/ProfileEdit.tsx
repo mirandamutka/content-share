@@ -1,11 +1,10 @@
 import { StyleSheet, Text, View, Modal, Alert, Pressable } from "react-native";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import ButtonCircle from "./ButtonCircle";
 import ProfileAccounts from "./ProfileAccounts";
+import { Context } from "../context/Context";
 
 interface IProfileEdit {
-  profileEntry: any
-  index: number
   createProfile: boolean
   setCreateProfile: any
 }
@@ -13,8 +12,11 @@ interface IProfileEdit {
 const ProfileEdit: FC<IProfileEdit> = (props) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [accountArray, setAccountArray] = useState<any[]>([]);
-  let twitchNameFromFB = props.profileEntry.twitch;
-  let ytNameFromFB = props.profileEntry.youtube;
+  const [twitchNameFromFB, setTwitchNameFromFB] = useState("");
+  const [ytNameFromFB, setYTNameFromFB] = useState("");
+  const context = useContext(Context);
+  // let twitchNameFromFB = context?.profileList[props.index].twitch;
+  // let ytNameFromFB = context?.profileList[props.index].youtube;
 
   const toggleModal = () => {
    console.log("Modal pressed")
@@ -61,7 +63,14 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
 
   useEffect(() => {
     setAccountArray([]);
-  }, [props.index])
+    console.log("Context index: ", context?.index)
+  }, [context?.index])
+
+  useEffect(() => {
+      setTwitchNameFromFB(context?.profileList[context?.index].twitch)
+      setYTNameFromFB(context?.profileList[context?.index].youtube)
+      console.log("Names: ", twitchNameFromFB, ytNameFromFB)
+  }, [context?.index])
 
   return (
     <View style={styles.container}>
@@ -73,11 +82,8 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
         return (
           <ProfileAccounts 
             type={item} 
-            key={index} 
-            profileEntry={props.profileEntry} 
+            key={index}
             nameFromFB={item == "twitch" ? twitchNameFromFB : ytNameFromFB}
-            createProfile={props.createProfile}
-            setCreateProfile={props.setCreateProfile}
             />
         )
       })}
@@ -126,7 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
+    // marginTop: 22,
   },
   modalView: {
     margin: 20,
