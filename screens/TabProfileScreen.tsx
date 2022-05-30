@@ -22,8 +22,6 @@ export default function TabProfileScreen() {
   // const [profileList, setProfileList] = useState<any[]>([]);
   const [profileEntry, setProfileEntry] = useState({});
   const [createProfile, setCreateProfile] = useState(false);
-  const [screen, setScreen] = useState("");
-  const [screenChanged, setScreenChanged] = useState(false);
 
   const context = useContext(Context);
 
@@ -126,16 +124,18 @@ export default function TabProfileScreen() {
       >
         <Text style={styles.buttonText}>Log out</Text>
       </TouchableOpacity>
-      <View style={styles.buttonCircleContainer}>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-          {context?.profileList.map((item: {}, index: number) => {
-            return <ButtonCircle onPress={() => [setScreen("edit"), context?.setIndex(index), setScreenChanged(true)]} label={index.toString()} key={index} />;
-          })}
-          <ButtonCircle onPress={() => setScreen("create")} label={"+"} />
-        </ScrollView>
-      </View>
       <View style={styles.buttonContainer}>
-        {screenChanged && switchProfileScreens(screen)}
+        {context?.profileList.length <= 0 ?
+        <ProfileCreate
+          createProfile={createProfile}
+          setCreateProfile={setCreateProfile}
+        />
+        :
+        <ProfileEdit
+          createProfile={createProfile}
+          setCreateProfile={setCreateProfile} 
+        />  
+      }
       </View>
     </SafeAreaView>
   );
