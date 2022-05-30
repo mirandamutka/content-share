@@ -3,6 +3,10 @@ import React, { FC, useContext, useEffect, useState } from "react";
 import ButtonCircle from "./ButtonCircle";
 import ProfileAccounts from "./ProfileAccounts";
 import { Context } from "../context/Context";
+import Button from "./Button";
+import { collection, doc, getDocs, getFirestore, updateDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { useIsFocused } from "@react-navigation/native";
 
 interface IProfileEdit {
   createProfile: boolean
@@ -14,9 +18,12 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
   const [accountArray, setAccountArray] = useState<any[]>([]);
   const [twitchNameFromFB, setTwitchNameFromFB] = useState("");
   const [ytNameFromFB, setYTNameFromFB] = useState("");
+  const [twitchName, setTwitchName] = useState("");
+  const [ytName, setYTName] = useState("");
   const context = useContext(Context);
-  // let twitchNameFromFB = context?.profileList[props.index].twitch;
-  // let ytNameFromFB = context?.profileList[props.index].youtube;
+  const auth = getAuth();
+  const firestore = getFirestore();
+  const isFocused = useIsFocused();
 
   const toggleModal = () => {
    console.log("Modal pressed")
@@ -28,6 +35,42 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
     setAccountArray(accountArray => [...accountArray, type])
     }
   }
+
+  const updateAccounts = async () => {
+    const uid = auth.currentUser?.uid;
+    let id = context?.profileList[context?.index].id;
+    let docRef = doc(firestore, "users", uid!, "profiles", id);
+    console.log("Doc ref: ", docRef)
+    if (auth.currentUser) {
+      await updateDoc(docRef, {
+        twitch: twitchName,
+        youtube: ytName
+      })
+    }
+    context?.setUpdateProfile(true)
+  };
+
+  const accountsFromFB = async () => {
+    if(context?.profileList) {
+      setTwitchNameFromFB(context?.profileList[context?.index].twitch)
+      setYTNameFromFB(context?.profileList[context?.index].youtube)
+    }
+  }
+
+  useEffect(() => {
+    accountsFromFB()
+  }, [])
+
+  useEffect(() => {
+    if (isFocused) {
+      if (context?.profileList[context?.index].twitch !== "") {
+        addToAccountArray("twitch")
+      }
+      if (context?.profileList[context?.index].youtube !== "") {
+        addToAccountArray("youtube")
+      }
+    }
+  }, [isFocused])
 
   const modalView = () => {
    return (
@@ -61,17 +104,6 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
     );
   }
 
-  useEffect(() => {
-    setAccountArray([]);
-    console.log("Context index: ", context?.index)
-  }, [context?.index])
-
-  useEffect(() => {
-      setTwitchNameFromFB(context?.profileList[context?.index].twitch)
-      setYTNameFromFB(context?.profileList[context?.index].youtube)
-      console.log("Names: ", twitchNameFromFB, ytNameFromFB)
-  }, [context?.index])
-
   return (
     <View style={styles.container}>
      {modalView()}
@@ -80,10 +112,12 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
       </View>
       {accountArray.map((item, index) => {
         return (
-          <ProfileAccounts 
-            type={item} 
+          <ProfileAccounts  
             key={index}
+            icon={item == "twitch" ? "twitch" : "youtube-play"}
             nameFromFB={item == "twitch" ? twitchNameFromFB : ytNameFromFB}
+            updateName={item == "twitch" ? twitchName : ytName}
+            setUpdateName={item == "twitch" ? setTwitchName : setYTName}
             />
         )
       })}
@@ -98,6 +132,13 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
         <Text style={styles.title}>Filter</Text>
       </View>
       <ButtonCircle onPress={() => {}} label={"+"} small={true} />
+      <View style={styles.buttonContainer}>
+      <Button 
+        onPress={() => updateAccounts()}
+        label={"Save Profile"}
+        outline={false}
+        />
+        </View>
     </View>
   );
 };
@@ -119,6 +160,10 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     width: "100%",
     paddingLeft: 10,
+  },
+
+  buttonContainer: {
+    width: "80%"
   },
 
   title: {

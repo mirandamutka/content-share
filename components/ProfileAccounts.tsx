@@ -1,77 +1,31 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import React, { FC, useContext, useEffect, useState } from "react";
+import { StyleSheet, TextInput, View } from "react-native";
+import React, { FC, useEffect } from "react";
 import { FontAwesome } from "@expo/vector-icons";
-import { getAuth } from "firebase/auth";
-import {
-  getFirestore,
-  doc,
-  updateDoc,
-} from "firebase/firestore";
-import { Context } from "../context/Context";
 
 interface IProfileAccounts {
-  type: string
+  icon: string
   nameFromFB: string
+  updateName: string
+  setUpdateName: (updateName: string) => void
 }
 
 const ProfileAccounts: FC<IProfileAccounts> = (props) => {
-  const auth = getAuth();
-  const firestore = getFirestore();
-  const uid = auth.currentUser?.uid;
-  const [userName, setUserName] = useState("");
-  const [submit, setSubmit] = useState(false);
-  const context = useContext(Context);
-  let id = context?.profileList[context?.index].id;
-  let docRef = doc(firestore, "users", uid!, "profiles", id);
-
-  const updateAccounts = async (username: string) => {
-    console.log("Doc ref: ", docRef)
-    if (auth.currentUser) {
-      props.type == "twitch" ? 
-      await updateDoc(docRef, {
-        twitch: username
-      })
-      :
-      await updateDoc(docRef, {
-        youtube: username
-      })
-      context?.setUpdateProfile(true);
-    }
-  };
 
   useEffect(() => {
-    console.log("username: ", userName);
-    if (submit) {
-      updateAccounts(userName)
-      setSubmit(false)  
-    }
-  }, [submit]);
-
-  useEffect(() => {
-    if(context?.profileList[context?.index].id) {
-      id = context?.profileList[context?.index].id;
-      docRef = doc(firestore, "users", uid!, "profiles", id);
-    }
-  }, [context?.profileList])
+    props.setUpdateName(props.nameFromFB)
+  }, [])
 
   return (
     <View style={styles.container}>
       <View style={styles.accountContainer}>
         <View style={styles.iconContainer}>
-          {props.type == "twitch" ? (
-            <FontAwesome name="twitch" size={24} color="black" />
-          ) : (
-            <FontAwesome name="youtube-play" size={24} color="black" />
-          )}
+            <FontAwesome name={props.icon} size={24} color="black" />
         </View>
         <TextInput
           placeholder={props.nameFromFB !== "" ? props.nameFromFB : "Enter username..."}
+          value={props.updateName}
+          onChangeText={(text) => props.setUpdateName(text)}
           style={styles.inputText}
-          onSubmitEditing={(value) => [
-            setUserName(value.nativeEvent.text),
-            context?.setUpdateProfile(true),
-            setSubmit(true)
-          ]}
         />
       </View>
       <View style={styles.seperator} />
