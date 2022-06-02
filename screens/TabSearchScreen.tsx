@@ -27,10 +27,6 @@ export default function TabSearchScreen() {
     }
   };
 
-  useEffect(() => {
-    console.log("searchResult: ", searchResult);
-  }, [searchResult]);
-
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
@@ -104,6 +100,7 @@ const styles = StyleSheet.create({
 
   searchResult: {
     width: "100%",
+    alignItems: "center",
   },
 
   noResult: {

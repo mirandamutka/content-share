@@ -36,7 +36,6 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
   const isFocused = useIsFocused();
 
   const toggleModal = () => {
-    console.log("Modal pressed");
     setModalVisible(!modalVisible);
   };
 
@@ -55,7 +54,6 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
     let id = context?.profileList[context?.index].id;
     let docRef = doc(firestore, "users", uid!, "profiles", id);
     let profileRef = doc(firestore, "profiles", id);
-    console.log("Doc ref: ", docRef);
     if (auth.currentUser) {
       await updateDoc(docRef, {
         twitch: twitchName,
