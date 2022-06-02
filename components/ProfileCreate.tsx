@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import React, { FC, useEffect } from "react";
 import Button from "./Button";
 import { getAuth } from "firebase/auth";
-import { getFirestore, addDoc, collection, updateDoc, getDocs } from "firebase/firestore";
+import { getFirestore, addDoc, collection, updateDoc, getDocs, doc, setDoc } from "firebase/firestore";
 
 interface IProfileCreate {
   createProfile?: boolean
@@ -27,6 +27,15 @@ const ProfileCreate: FC<IProfileCreate> = (props) => {
       });
 
       await updateDoc(docRef, {
+        id: docRef.id
+      })
+      const profilRef = await setDoc(doc(firestore, "profiles", docRef.id), {
+        type: type,
+        twitch: "",
+        youtube: "",
+        schedule: [],
+        games: [],
+        genre: [],
         id: docRef.id
       })
 

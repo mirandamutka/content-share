@@ -2,11 +2,7 @@ import {
   StyleSheet,
   Text,
   View,
-  Modal,
-  Alert,
-  Pressable,
   TouchableWithoutFeedback,
-  ScrollView,
 } from "react-native";
 import React, { FC, useContext, useEffect, useState } from "react";
 import ButtonCircle from "./ButtonCircle";
@@ -27,19 +23,12 @@ interface IProfileEdit {
 const ProfileEdit: FC<IProfileEdit> = (props) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [accountArray, setAccountArray] = useState<any[]>([]);
-  const [scheduleArray, setScheduleArray] = useState<any[]>([]);
+  const [schedule, setSchedule] = useState<any[]>([]);
+  const [scheduleEntry, setScheduleEntry] = useState({});
   const [twitchNameFromFB, setTwitchNameFromFB] = useState("");
   const [ytNameFromFB, setYTNameFromFB] = useState("");
   const [twitchName, setTwitchName] = useState("");
   const [ytName, setYTName] = useState("");
-  const [schedule, setSchedule] = useState({
-    platform: "",
-    specificTime: false,
-    time: "",
-    repeats: false,
-    repeatDays: [],
-    specificDay: "",
-  });
 
   const context = useContext(Context);
   const auth = getAuth();
@@ -57,20 +46,27 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
     }
   };
 
-  const addToScheduleArray = (schedule: object) => {
-    setScheduleArray((scheduleArray) => [...scheduleArray, schedule]);
+  const addToScheduleArray = (schedule: any) => {
+    setSchedule((scheduleArray) => [...scheduleArray, schedule]);
   };
 
   const updateAccounts = async () => {
     const uid = auth.currentUser?.uid;
     let id = context?.profileList[context?.index].id;
     let docRef = doc(firestore, "users", uid!, "profiles", id);
+    let profileRef = doc(firestore, "profiles", id);
     console.log("Doc ref: ", docRef);
     if (auth.currentUser) {
       await updateDoc(docRef, {
         twitch: twitchName,
         youtube: ytName,
+        schedule: schedule
       });
+      await updateDoc(profileRef, {
+        twitch: twitchName,
+        youtube: ytName,
+        schedule: schedule
+      })
     }
     context?.setUpdateProfile(true);
   };
@@ -108,6 +104,7 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
 
   useEffect(() => {
     accountsFromFB();
+    setSchedule(context?.profileList[context?.index].schedule);
   }, []);
 
   useEffect(() => {
@@ -155,12 +152,12 @@ const ProfileEdit: FC<IProfileEdit> = (props) => {
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Schedule</Text>
           </View>
-          {scheduleArray.map((item, index) => {
-            return <ProfileSchedule key={index} />;
+          {schedule.map((item: any, index: number) => {
+            return <ProfileSchedule key={index} entry={scheduleEntry} setEntry={setScheduleEntry} schedule={schedule} setSchedule={setSchedule} item={item} />
           })}
           <ButtonCircle
             onPress={() => {
-              addToScheduleArray(schedule);
+              addToScheduleArray(scheduleEntry);
             }}
             label={"+"}
             small={true}
@@ -186,10 +183,8 @@ export default ProfileEdit;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "space-evenly",
     width: "100%",
-    height: "100%",
-    alignItems: "center",
+    alignItems: "center"
   },
 
   titleContainer: {
@@ -201,7 +196,7 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    width: "80%",
+    width: "80%"
   },
 
   title: {
