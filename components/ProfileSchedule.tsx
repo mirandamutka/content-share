@@ -5,22 +5,34 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import ModalView from "./ModalView";
 import ButtonSelect from "./ButtonSelect";
 import ScrollPicker from "react-native-wheel-scrollview-picker";
 import Button from "./Button";
 import ButtonGray from "./ButtonGray";
+import { Context } from "../context/Context";
 
-const ProfileSchedule = () => {
+interface IProfileSchedule {
+  entry: any
+  setEntry: any
+  schedule: any
+  setSchedule: (schedule: any) => void
+  item: any
+}
+
+const ProfileSchedule: FC<IProfileSchedule> = (props) => {
   const [platform, setPlatform] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [scrollPickerVisible, setScrollPickerVisible] = useState(false);
-  const [timeType, setTimeType] = useState(false);
+  const [isSpecificTime, setIsSpecificTime] = useState(false);
+  const [isNoTime, setIsNoTime] = useState(false);
   const [repeats, setRepeats] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(0);
-  const [specificTime, setSpecificTime] = useState<any>();
+  const [updateSchedule, setUpdateSchedule] = useState(false);
+  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [time, setTime] = useState<any>();
   const weekdays = [
     "Mondays",
     "Tuesdays",
@@ -30,6 +42,9 @@ const ProfileSchedule = () => {
     "Saturdays",
     "Sundays",
   ];
+
+  const context = useContext(Context);
+
   const toggleModal = () => {
     console.log("Modal pressed");
     setModalVisible(!modalVisible);
@@ -39,10 +54,10 @@ const ProfileSchedule = () => {
     return (
       <View>
         <ScrollPicker
-          dataSource={["1", "2", "3", "4", "5", "6"]}
+          dataSource={["1", "2", "3", "4", "5", "6", "1", "2", "3", "4", "5", "6"]}
           selectedIndex={1}
           onValueChange={(data, selectedIndex) => {
-            setSpecificTime(data);
+            setTime(data)
           }}
           wrapperHeight={180}
           // wrapperWidth={150}
@@ -67,7 +82,7 @@ const ProfileSchedule = () => {
         <Button
           onPress={() => [
             setPlatform("Twitch"),
-            setModalVisible(!modalVisible),
+            setModalVisible(!modalVisible)
           ]}
           label={"Twitch"}
           outline={false}
@@ -75,7 +90,7 @@ const ProfileSchedule = () => {
         <Button
           onPress={() => [
             setPlatform("Youtube"),
-            setModalVisible(!modalVisible),
+            setModalVisible(!modalVisible)
           ]}
           label={"Youtube"}
           outline={true}
@@ -84,9 +99,57 @@ const ProfileSchedule = () => {
     );
   };
 
+  const saveSchedule = () => {
+    props.setEntry({
+      platform: platform,
+      isSpecificTime: isSpecificTime,
+      isNoTime: isNoTime,
+      repeats: repeats,
+      repeatDays: selectedDay
+    })
+    setUpdateSchedule(true);
+  }
+
   useEffect(() => {
-    console.log("Platform: ", platform);
-  }, [platform]);
+    if (updateSchedule) {
+      props.setSchedule((schedule: any) => [...schedule, props.entry])
+      props.schedule.pop();
+      setUpdateSchedule(false)
+    }
+  }, [updateSchedule])
+  
+  useEffect(() => {
+    console.log("Schedule: ", props.schedule);
+  }, [props.schedule])
+
+  useEffect(() => {
+    if (props.item)
+    {
+      setPlatform(props.item.platform);
+      setIsSpecificTime(props.item.isSpecificTime);
+      setIsNoTime(props.item.isNoTime);
+      setRepeats(props.item.repeats);
+      setSelectedDay(props.item.repeatDays);
+      const index = weekdays.findIndex(object => {
+        return object === props.item.repeatDays;
+      });
+      setSelectedIndex(index);
+    }
+
+  }, [context?.updateProfile])
+
+  useEffect(() => {
+    if (props.item)
+    {
+      setPlatform(props.item.platform);
+      setIsSpecificTime(props.item.isSpecificTime);
+      setIsNoTime(props.item.isNoTime);
+      setRepeats(props.item.repeats);
+      setSelectedDay(props.item.repeatDays);
+    }
+
+    console.log("Item: ", props.item);
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -114,19 +177,13 @@ const ProfileSchedule = () => {
         <View style={styles.specificTimeContainer}>
           <TouchableOpacity
             onPress={() => {
-              setTimeType(!timeType);
+              setIsSpecificTime(true);
+              setIsNoTime(false);
             }}
             style={styles.buttonTextRow}
           >
-            <ButtonSelect selected={!timeType} />
+            <ButtonSelect selected={isSpecificTime} />
             <Text>Specific Time</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setScrollPickerVisible(!scrollPickerVisible);
-            }}
-          >
-            <Text>Press me</Text>
           </TouchableOpacity>
           {scrollPickerVisible && (
             <ModalView
@@ -138,16 +195,17 @@ const ProfileSchedule = () => {
         </View>
         <TouchableOpacity
           onPress={() => {
-            setTimeType(!timeType);
+            setIsNoTime(true);
+            setIsSpecificTime(false);
           }}
           style={styles.buttonTextRow}
         >
-          <ButtonSelect selected={timeType} />
+          <ButtonSelect selected={isNoTime} />
           <Text>No Time</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            setRepeats(!repeats);
+            setRepeats(true);
           }}
           style={styles.buttonTextRow}
         >
@@ -160,15 +218,21 @@ const ProfileSchedule = () => {
               <TouchableOpacity
                 key={index}
                 onPress={() => {
-                  setSelectedDay(index);
+                  setSelectedDay(day);
                   setRepeats(true);
+                  setSelectedIndex(index);
                 }}
               >
-                <ButtonGray label={day} selected={selectedDay} index={index} isSelectable={repeats} />
+                <ButtonGray label={day} selected={selectedIndex} index={index} isSelectable={repeats} />
               </TouchableOpacity>
             );
           })}
         </View>
+        <Button
+          onPress={() => {saveSchedule()}}
+          label={"Save schedule"}
+          outline={false}
+          />
       </View>
     </View>
   );

@@ -5,10 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/core";
 import Button from "../components/Button";
+import { Context } from "../context/Context";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -16,11 +17,13 @@ const LoginScreen = () => {
   
   const auth = getAuth();
   const navigation = useNavigation();
+  const context = useContext(Context);
 
   useEffect(() => {
    const unsubscribe = auth.onAuthStateChanged(user => {
     if (user) {
      navigation.replace("BottomTab")
+     context?.setCurrentUser(auth.currentUser?.uid)
     }
    })
 

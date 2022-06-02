@@ -5,15 +5,21 @@ interface IContext {
   setProfileList: (data: any) => void;
   updateProfile: boolean;
   setUpdateProfile: (updated: boolean) => void;
+  allProfiles: any;
+  setAllProfiles: (data: any) => void;
   index: number;
   setIndex: (index: number) => void;
+  currentUser: any;
+  setCurrentUser: (user: any) => void;
 }
 export const Context = createContext<IContext | undefined>(undefined);
 
 export const ContextProvider: FC = (props) => {
   const [profileList, setProfileList] = useState([]);
   const [updateProfile, setUpdateProfile] = useState(false);
+  const [allProfiles, setAllProfiles] = useState([]);
   const [index, setIndex] = useState(0);
+  const [currentUser, setCurrentUser] = useState("");
   return (
     <Context.Provider
       value={{
@@ -21,8 +27,12 @@ export const ContextProvider: FC = (props) => {
         setProfileList,
         updateProfile,
         setUpdateProfile,
+        allProfiles,
+        setAllProfiles,
         index,
         setIndex,
+        currentUser,
+        setCurrentUser
       }}
     >
       {props.children}
