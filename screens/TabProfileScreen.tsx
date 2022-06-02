@@ -100,32 +100,19 @@ export default function TabProfileScreen() {
   useEffect(() => {
     if (createProfile) {
       renderProfiles();
-      console.log("Profile List: ", context?.profileList);
-      console.log("All profiles: ", context?.allProfiles);
     }
-    console.log("CreateProfile: ", createProfile);
   }, [createProfile]);
 
   useEffect(() => {
     if (context?.updateProfile) {
       rerenderProfiles();
-      console.log("Re-rendering... ", context?.profileList);
-      console.log("Re-render all profiles... ", context?.allProfiles);
     }
-    console.log("update profile status: ", context?.updateProfile);
     context?.setUpdateProfile(false);
   }, [context?.updateProfile]);
 
   useEffect(() => {
     renderProfiles();
   }, []);
-
-  useEffect(() => {
-    console.log("Index: ", context?.index);
-    if (context?.profileList) {
-      console.log("profile list index: ", context?.profileList[context?.index]);
-    }
-  }, [context?.index]);
 
   return (
     <SafeAreaView style={styles.container}>

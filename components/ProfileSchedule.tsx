@@ -46,7 +46,6 @@ const ProfileSchedule: FC<IProfileSchedule> = (props) => {
   const context = useContext(Context);
 
   const toggleModal = () => {
-    console.log("Modal pressed");
     setModalVisible(!modalVisible);
   };
 
@@ -119,10 +118,6 @@ const ProfileSchedule: FC<IProfileSchedule> = (props) => {
   }, [updateSchedule])
   
   useEffect(() => {
-    console.log("Schedule: ", props.schedule);
-  }, [props.schedule])
-
-  useEffect(() => {
     if (props.item)
     {
       setPlatform(props.item.platform);
@@ -147,8 +142,6 @@ const ProfileSchedule: FC<IProfileSchedule> = (props) => {
       setRepeats(props.item.repeats);
       setSelectedDay(props.item.repeatDays);
     }
-
-    console.log("Item: ", props.item);
   }, [])
 
   return (
